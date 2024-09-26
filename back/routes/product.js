@@ -1,18 +1,97 @@
+// // routes/product.js
+// const express = require('express');
+// const multer = require('multer');
+// const path = require('path');
+// const router = express.Router();
+// const { protect, admin } = require('../middleware/authMiddleware');
+// const Product = require('../models/Product');
+
+// // Set up multer for file storage
+// const storage = multer.diskStorage({
+//     destination: function (req, file, cb) {
+//         cb(null, 'uploads/'); // Folder where images will be stored
+//     },
+//     filename: function (req, file, cb) {
+//         cb(null, `${file.fieldname}-${Date.now()}${path.extname(file.originalname)}`);
+//     }
+// });
+
+// // File filter to allow only images
+// const fileFilter = (req, file, cb) => {
+//     const allowedTypes = /jpeg|jpg|png/;
+//     const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
+//     const mimetype = allowedTypes.test(file.mimetype);
+
+//     if (extname && mimetype) {
+//         return cb(null, true);
+//     } else {
+//         cb('Images only!');
+//     }
+// };
+
+// // Initialize multer
+// const upload = multer({
+//     storage,
+//     limits: { fileSize: 1000000 }, // 1MB file size limit
+//     fileFilter
+// });
+
+// // POST route to add a product (with image upload)
+// router.post('/add', protect, admin, upload.single('image'), async (req, res) => {
+//     try {
+//         const {
+//             name,
+//             description,
+//             price,
+//             brand,
+//             category,
+//             Stock,
+//             rating,
+//             numReviews
+//         } = req.body;
+
+//         const image = req.file ? `/uploads/${req.file.filename}` : null; // Save image path
+
+//         const newProduct = new Product({
+//             name,
+//             description,
+//             price,
+//             image, // Store image path
+//             brand,
+//             category,
+//             Stock,
+//             rating,
+//             numReviews
+//         });
+
+//         const savedProduct = await newProduct.save();
+//         res.status(201).json(savedProduct);
+//     } catch (error) {
+//         res.status(500).json({ message: 'Error adding product', error });
+//     }
+// });
+
+
+
+
+
+
 // routes/product.js
 const express = require('express');
 const multer = require('multer');
 const path = require('path');
 const router = express.Router();
 const { protect, admin } = require('../middleware/authMiddleware');
-const Product = require('../models/Product');
-
+const Product = require('../models/Product'); 
 // Set up multer for file storage
+
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
         cb(null, 'uploads/'); // Folder where images will be stored
     },
     filename: function (req, file, cb) {
-        cb(null, `${file.fieldname}-${Date.now()}${path.extname(file.originalname)}`);
+        const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1E9)}`;
+        cb(null, `${file.fieldname}-${uniqueSuffix}${path.extname(file.originalname)}`);
     }
 });
 
@@ -25,20 +104,22 @@ const fileFilter = (req, file, cb) => {
     if (extname && mimetype) {
         return cb(null, true);
     } else {
-        cb('Images only!');
+        cb('Images only!'); // If not a valid image file, send an error
     }
 };
 
-// Initialize multer
+// Initialize multer to handle multiple images
 const upload = multer({
     storage,
     limits: { fileSize: 1000000 }, // 1MB file size limit
     fileFilter
 });
 
-// POST route to add a product (with image upload)
-router.post('/add', protect, admin, upload.single('image'), async (req, res) => {
+// POST route to add a product (with multiple image uploads)
+router.post('/add', protect, admin, upload.array('images', 5), async (req, res) => {
     try {
+        console.log(req.files); // Log this to check if files are being uploaded
+
         const {
             name,
             description,
@@ -50,13 +131,20 @@ router.post('/add', protect, admin, upload.single('image'), async (req, res) => 
             numReviews
         } = req.body;
 
-        const image = req.file ? `/uploads/${req.file.filename}` : null; // Save image path
+        // If no files are uploaded, return an error
+        if (!req.files || req.files.length === 0) {
+            return res.status(400).json({ message: 'No images uploaded' });
+        }
+
+        // Save all uploaded image paths to an array
+        // Fix: Use template literals for the correct image paths
+        const images = req.files.map(file => `/uploads/${file.filename}`);
 
         const newProduct = new Product({
             name,
             description,
             price,
-            image, // Store image path
+            images, // Save image paths array
             brand,
             category,
             Stock,
@@ -67,9 +155,13 @@ router.post('/add', protect, admin, upload.single('image'), async (req, res) => 
         const savedProduct = await newProduct.save();
         res.status(201).json(savedProduct);
     } catch (error) {
-        res.status(500).json({ message: 'Error adding product', error });
+        console.error('Error adding product:', error); // Log the error
+        res.status(500).json({ message: 'Error adding product', error: error.message });
     }
 });
+
+
+
 
 
 
@@ -101,6 +193,59 @@ router.put('/:id', protect, admin, upload.single('image'), async (req, res) => {
         res.status(500).json({ message: 'Error updating product', error });
     }
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 // GET all products

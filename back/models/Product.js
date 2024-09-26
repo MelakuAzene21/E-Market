@@ -26,10 +26,7 @@ const productSchema = mongoose.Schema(
             default: 0,
         },
        
-        image: {
-            type: String,
-            required: true,
-        },
+        images: [{ type: String, required: true }],
         brand: {
             type: String,
             required: false,

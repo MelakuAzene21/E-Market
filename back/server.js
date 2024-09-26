@@ -4,7 +4,6 @@ const dotenv = require('dotenv');
 const cookieParser = require('cookie-parser');
 const connectDB = require('./config/db');
 const authRoutes = require('./routes/authRoutes');
-const noteRoutes = require('./routes/noteRoutes');
 const userCredentialRoute = require('./routes/userCredentialRoutes');
 //const userCredentialRoute=require('./routes/userCredentialRoutes')
 const cors = require('cors');
@@ -23,11 +22,10 @@ app.use(cors({
     credentials: true, // Allow cookies to be sent
 }));
 app.use(express.json());
-app.use(cookieParser());
- 
+app.use(cookieParser());  
 app.use('/api/auth', authRoutes);
-app.use('/api/notes', noteRoutes);
-app.get('/notes', noteRoutes)
+
+
 app.use('/api/products', productRoutes)
 app.use('/api/cart', cartRoutes);
 app.use('/api/orders', orderRoutes)

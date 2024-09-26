@@ -2,10 +2,19 @@
 const Order = require('../models/orderModel');
 const Cart = require('../models/cartModel');
 const Product = require('../models/Product');
-
+// const axios = require('axios');
+// const { signTeleBirrRequest } = require('../utils/teleBirrUtils');
 // @desc    Create new order
 // @route   POST /api/orders
 // @access  Private
+// const {
+//     TELEBIRR_MERCHANT_APP_ID,
+//     TELEBIRR_FABRIC_APP_ID,
+//     TELEBIRR_SHORTCODE,
+//     TELEBIRR_APP_SECRET,
+//     TELEBIRR_PRIVATE_KEY
+// } = process.env;
+
 const addOrderItems = async (req, res) => {
     const {
         shippingAddress,
@@ -56,15 +65,56 @@ const addOrderItems = async (req, res) => {
     });
 
     const createdOrder = await order.save();
-
     // Clear the cart after creating the order
     cart.items = [];
     await cart.save();
 
-    return  res.status(201).json(createdOrder)
+    return res.status(201).json(createdOrder)
+    //below
+    // const paymentData = {
+    //     outTradeNo: createdOrder._id,
+    //     subject: 'Order Payment',
+    //     totalAmount: totalPrice,
+    //     merchantAppId: TELEBIRR_MERCHANT_APP_ID,
+    //     notifyUrl: 'http://localhost:5000/api/telebirr-notify',
+    //     shortCode: TELEBIRR_SHORTCODE,
+    //     timeoutExpress: '15m',
+    //     nonceStr: Date.now().toString(),
+    // };
+
+    // const sign = signTeleBirrRequest(paymentData, TELEBIRR_PRIVATE_KEY);
+    // const telebirrRequestData = {
+    //     ...paymentData,
+    //     sign,
+    //     appSecret: TELEBIRR_APP_SECRET,
+    // };
+
+    // try {
+    //     const telebirrResponse = await axios.post('https://api.telebirr.com/payments/pay', telebirrRequestData);
+    //     res.status(201).json({ order: createdOrder, telebirrPayment: telebirrResponse.data });
+    // } catch (error) {
+    //     console.error('TeleBirr payment failed:', error);
+    //     res.status(500).json('Payment failed');
+//     // }
+// };
+
+// const teleBirrNotify = async (req, res) => {
+//     const { outTradeNo, tradeStatus } = req.body;
+
+//     if (tradeStatus === 'TRADE_SUCCESS') {
+//         const order = await Order.findById(outTradeNo);
+//         if (order) {
+//             order.isPaid = true;
+//             order.paidAt = Date.now();
+//             await order.save();
+//             return res.status(200).json('Payment successful');
+//         }
+//     }
+//     res.status(400).json('Payment failed');
 };
 
-// @desc    Get order by ID
+ //above
+ // @desc    Get order by ID
 // @route   GET /api/orders/:id
 // @access  Private
 const getOrderById = async (req, res) => {
